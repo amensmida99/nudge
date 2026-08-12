@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Entitlements for the main "nudge" app target.
+
+  To activate: in Xcode select the nudge target → Signing & Capabilities →
+  "+ Capability" → App Groups, then check/add "group.nudge.shared". Xcode will
+  either create this file or merge into it. Ensure CODE_SIGN_ENTITLEMENTS in the
+  target's build settings points here. This group must match
+  AppConstants.appGroupID and the Share Extension's entitlements.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.nudge.shared</string>
+    </array>
+</dict>
+</plist>
