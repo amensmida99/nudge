@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: nudge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          # Replace with the ACR image, e.g. acrnudgedevxxxxxx.azurecr.io/nudge-web:latest
+          # NOTE: NEXT_PUBLIC_API_BASE_URL is baked in at image build time (see /web/README.md),
+          # not set here — changing the backend URL means rebuilding this image.
+          image: REPLACE_WITH_ACR_LOGIN_SERVER/nudge-web:latest
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: nudge
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 3000
