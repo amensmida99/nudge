@@ -1,7 +1,7 @@
 # Nudge Kubernetes manifests
 
 Plain YAML (no Helm) for running Postgres, the backend, and the web app on
-the AKS cluster provisioned by `/infra`. Everything lives in the `nudge`
+the EKS cluster provisioned by `/infra`. Everything lives in the `nudge`
 namespace.
 
 - `00-namespace.yaml` — the `nudge` namespace
@@ -11,34 +11,39 @@ namespace.
 
 ## Prerequisites
 
-- `/infra` applied (`terraform apply`) — gives you the AKS cluster and ACR
+- `/infra` applied (`terraform apply`) — gives you the EKS cluster and two ECR repos
 - `kubectl`, pointed at the cluster:
   ```bash
-  az aks get-credentials --resource-group <resource_group_name> --name <aks_cluster_name>
+  aws eks update-kubeconfig --region <region> --name <cluster_name>
   ```
   (both from `terraform output` in `/infra`)
-- `docker`, logged into the registry: `az acr login --name <acr_name>`
+- `docker`, logged into the registries:
+  ```bash
+  aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account_id>.dkr.ecr.<region>.amazonaws.com
+  ```
 
 ## 1. Build and push the images
 
 ```bash
-ACR=<acr_login_server>   # terraform output acr_login_server, e.g. acrnudgedevxxxxxx.azurecr.io
+BACKEND_REPO=<ecr_backend_repository_url>   # terraform output ecr_backend_repository_url
+WEB_REPO=<ecr_web_repository_url>           # terraform output ecr_web_repository_url
 
-docker build -t $ACR/nudge-backend:latest ../backend
-docker push $ACR/nudge-backend:latest
+docker build -t $BACKEND_REPO:latest ../backend
+docker push $BACKEND_REPO:latest
 
 # The web image needs to know the backend's URL at build time (see step 3 for
 # why this is a two-pass process the first time you deploy).
 docker build --build-arg NEXT_PUBLIC_API_BASE_URL=http://<backend-external-ip> \
-  -t $ACR/nudge-web:latest ../web
-docker push $ACR/nudge-web:latest
+  -t $WEB_REPO:latest ../web
+docker push $WEB_REPO:latest
 ```
 
 Then point the `image:` fields in `02-backend.yaml` and `03-web.yaml` at
 these, e.g.:
 
 ```bash
-sed -i '' "s|REPLACE_WITH_ACR_LOGIN_SERVER|$ACR|" 02-backend.yaml 03-web.yaml
+sed -i '' "s|REPLACE_WITH_ECR_BACKEND_REPOSITORY_URL|$BACKEND_REPO|" 02-backend.yaml
+sed -i '' "s|REPLACE_WITH_ECR_WEB_REPOSITORY_URL|$WEB_REPO|" 03-web.yaml
 ```
 
 ## 2. Create the secrets
@@ -74,9 +79,9 @@ rebuilds don't need this dance.
 
 ```bash
 kubectl -n nudge get svc
-# NAME      TYPE           EXTERNAL-IP     PORT(S)
-# backend   LoadBalancer   20.x.x.x        80:xxxxx/TCP
-# web       LoadBalancer   20.y.y.y        80:xxxxx/TCP
+# NAME      TYPE           EXTERNAL-IP                              PORT(S)
+# backend   LoadBalancer   a1b2c3.us-east-1.elb.amazonaws.com       80:xxxxx/TCP
+# web       LoadBalancer   d4e5f6.us-east-1.elb.amazonaws.com       80:xxxxx/TCP
 ```
 
 Open the web `EXTERNAL-IP` in a browser.
@@ -84,9 +89,10 @@ Open the web `EXTERNAL-IP` in a browser.
 ## Notes
 
 - No ingress controller, no TLS, no custom domain — two plain `LoadBalancer`
-  Services, each with their own public IP. Simplest thing that works for a
-  beta; add an ingress + cert-manager later if you need HTTPS/a real domain.
-- Postgres data lives on a PVC backed by an Azure Disk — it survives pod
+  Services, each provisioning their own AWS Network Load Balancer. Simplest
+  thing that works for a beta; add an ingress + cert-manager later if you
+  need HTTPS/a real domain.
+- Postgres data lives on a PVC backed by an EBS volume — it survives pod
   restarts, but there's no backup job. Fine for beta, not for anything you'd
   be upset to lose.
 - To redeploy after a code change: rebuild + push the image, then

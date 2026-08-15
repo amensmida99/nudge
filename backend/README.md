@@ -69,7 +69,7 @@ docker run -p 4000:4000 --env-file .env nudge-backend
 ```
 
 See `/k8s` for the Kubernetes manifests that run this (plus Postgres) on
-AKS, and `/infra` for the Terraform that provisions the cluster and registry.
+EKS, and `/infra` for the Terraform that provisions the cluster and registry.
 
 ## Data model (Postgres)
 

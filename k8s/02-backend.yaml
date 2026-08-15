@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: backend
-          # Replace with the ACR image, e.g. acrnudgedevxxxxxx.azurecr.io/nudge-backend:latest
-          image: REPLACE_WITH_ACR_LOGIN_SERVER/nudge-backend:latest
+          # Replace with the ECR image, e.g. <account_id>.dkr.ecr.eu-central-1.amazonaws.com/nudge-backend:latest
+          image: REPLACE_WITH_ECR_BACKEND_REPOSITORY_URL:latest
           ports:
             - containerPort: 4000
           env:

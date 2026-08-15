@@ -10,22 +10,22 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "location" {
-  description = "Azure region for all resources."
+variable "region" {
+  description = "AWS region for all resources."
   type        = string
-  default     = "eastus"
+  default     = "eu-central-1"
 }
 
 variable "node_count" {
-  description = "Number of nodes in the AKS system node pool."
+  description = "Number of nodes in the EKS managed node group."
   type        = number
   default     = 1
 }
 
-variable "node_vm_size" {
-  description = "VM size for AKS nodes. Standard_B2s is cheap and fine for a beta workload."
+variable "node_instance_type" {
+  description = "Instance type for EKS nodes. t3.small is cheap and fine for a beta workload."
   type        = string
-  default     = "Standard_B2s"
+  default     = "t3.small"
 }
 
 variable "tags" {

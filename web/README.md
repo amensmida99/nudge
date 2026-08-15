@@ -53,5 +53,5 @@ docker build --build-arg NEXT_PUBLIC_API_BASE_URL=http://<backend-ip>:4000 -t nu
 docker run -p 3000:3000 nudge-web
 ```
 
-See `/k8s` for the manifests that run this on AKS, and `/infra` for the
+See `/k8s` for the manifests that run this on EKS, and `/infra` for the
 Terraform that provisions the cluster and registry.

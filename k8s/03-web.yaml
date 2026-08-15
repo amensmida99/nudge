@@ -15,10 +15,10 @@ spec:
     spec:
       containers:
         - name: web
-          # Replace with the ACR image, e.g. acrnudgedevxxxxxx.azurecr.io/nudge-web:latest
+          # Replace with the ECR image, e.g. <account_id>.dkr.ecr.eu-central-1.amazonaws.com/nudge-web:latest
           # NOTE: NEXT_PUBLIC_API_BASE_URL is baked in at image build time (see /web/README.md),
           # not set here — changing the backend URL means rebuilding this image.
-          image: REPLACE_WITH_ACR_LOGIN_SERVER/nudge-web:latest
+          image: REPLACE_WITH_ECR_WEB_REPOSITORY_URL:latest
           ports:
             - containerPort: 3000
           readinessProbe:
