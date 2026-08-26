@@ -93,7 +93,7 @@ resource "aws_ecr_repository" "web" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  version = "~> 20.31"
 
   cluster_name    = local.cluster_name
   cluster_version = "1.30"
@@ -111,6 +111,7 @@ module "eks" {
       max_size       = var.node_count
       desired_size   = var.node_count
       instance_types = [var.node_instance_type]
+      ami_type       = "AL2023_x86_64_STANDARD"
     }
   }
 
